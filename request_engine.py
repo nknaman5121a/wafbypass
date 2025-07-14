@@ -33,29 +33,34 @@ def send_requests(base_url, payloads, verbose=False, method="GET", post_params=N
             else:
                 r = requests.get(url, timeout=5, allow_redirects=True)
 
-            # Smart reflection & XSS detection
+            # Reflection and basic bypass detection
             decoded_payload = html.unescape(payload)
+            response_text = r.text
 
-            # Basic reflection
-            is_raw_reflected = payload in r.text or decoded_payload in r.text
+            # Check for raw or unescaped reflection
+            is_raw_reflected = payload in response_text or decoded_payload in response_text
 
-            # False-positive sanitizer patterns (escaped HTML)
+            # Check for sanitization (common WAF encodings)
             bad_signatures = ["&lt;", "&gt;", "&#x3c;", "&#x3e;", "\\u003c", "\\u003e"]
-            sanitized = any(sig in r.text for sig in bad_signatures)
+            sanitized = any(sig in response_text for sig in bad_signatures)
 
-            # Final result: reflected and not encoded
-            is_reflected = is_raw_reflected and not sanitized
+            # Bonus: Check for executable context
+            likely_executable = any(x in response_text.lower() for x in [
+                "<script", "onerror=", "onload=", "onclick=", "src=javascript:", "<svg", "<iframe"
+            ])
 
-            is_diff = r.text != baseline_text
+            # Final decision
+            is_reflected = is_raw_reflected and not sanitized and likely_executable
+            is_diff = response_text != baseline_text
 
             results.append({
                 'payload': payload,
                 'status_code': r.status_code,
-                'hash': hashlib.md5(r.text.encode()).hexdigest(),
-                'length': len(r.text),
+                'hash': hashlib.md5(response_text.encode()).hexdigest(),
+                'length': len(response_text),
                 'final_url': r.url,
                 'location': r.headers.get('Location'),
-                'content': r.text[:300],
+                'content': response_text[:300],
                 'reflected': is_reflected,
                 'differs': is_diff
             })

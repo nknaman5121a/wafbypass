@@ -1,9 +1,20 @@
 import requests
 import hashlib
+from urllib.parse import urlparse, parse_qs
 
-def send_requests(base_url, payloads, verbose=False):
+def send_requests(base_url, payloads, verbose=False, method="GET"):
     results = []
 
+    # Extract parameter name from URL (e.g., ?query=FUZZ)
+    parsed_url = urlparse(base_url)
+    query_params = parse_qs(parsed_url.query)
+    param_name = None
+    for k, v in query_params.items():
+        if "FUZZ" in v[0]:
+            param_name = k
+            break
+
+    # Prepare baseline
     try:
         baseline_response = requests.get(base_url.replace("FUZZ", "baseline"), timeout=5)
         baseline_text = baseline_response.text
@@ -16,8 +27,14 @@ def send_requests(base_url, payloads, verbose=False):
         url = base_url.replace("FUZZ", payload)
         if verbose:
             print(f"[>] Sending payload: {payload}")
+
         try:
-            r = requests.get(url, timeout=5, allow_redirects=True)
+            if method.upper() == "POST" and param_name:
+                post_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+                r = requests.post(post_url, data={param_name: payload}, timeout=5, allow_redirects=True)
+            else:
+                r = requests.get(url, timeout=5, allow_redirects=True)
+
             is_reflected = payload in r.text
             is_diff = r.text != baseline_text
 
@@ -32,6 +49,7 @@ def send_requests(base_url, payloads, verbose=False):
                 'reflected': is_reflected,
                 'differs': is_diff
             })
+
         except Exception as e:
             if verbose:
                 print(f"[!] Error sending request for payload: {payload}\n    └─ {repr(e)}")
@@ -44,4 +62,5 @@ def send_requests(base_url, payloads, verbose=False):
                 'reflected': False,
                 'differs': False
             })
+
     return results

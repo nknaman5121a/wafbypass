@@ -8,4 +8,6 @@ def parse_args():
     parser.add_argument('--auto', action='store_true', help='Use built-in or custom payload list')
     parser.add_argument('--w', default='./payloads', help='Path to payload directory (default: ./payloads)')
     parser.add_argument('--verbose', action='store_true', help='Show detailed output (payloads sent, errors, etc.)')
+    parser.add_argument('--method', default='GET', choices=['GET', 'POST'], help='HTTP method to use (default: GET)')
+
     return parser.parse_args()

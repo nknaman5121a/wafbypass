@@ -1,4 +1,3 @@
-### wafbypass.py (entry point)
 from cli_parser import parse_args
 from payload_loader import PayloadLoader
 from payload_mutator import mutate_payloads
@@ -27,7 +26,7 @@ def main():
     mutated_payloads = mutate_payloads(payloads, args.type)
     print(f"[+] Generated {len(mutated_payloads)} mutated payload(s)")
 
-    results = send_requests(args.url, mutated_payloads)
+    results = send_requests(args.url, mutated_payloads, verbose=args.verbose)
 
     log_summary(results)
 

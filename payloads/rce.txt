@@ -1,0 +1,11 @@
+; cat /etc/passwd
+| whoami
+& id
+; sleep 5
+| ping -c 5 127.0.0.1
+`id`
+$(id)
+|| dir
+; netstat -an
+${IFS}ls${IFS}-la
+$(echo whoami)

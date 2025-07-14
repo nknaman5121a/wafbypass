@@ -60,6 +60,7 @@ python wafbypass.py --url "https://example.com/search.php?q=FUZZ" --type sqli --
 | `--p`       | Provide a single manual payload                              |
 | `--auto`    | Use auto payloads from `payloads/` folder                    |
 | `--w`       | Custom path to payload directory (default: `./payloads`)     |
+| `--verbose`  | Show detailed output for each payload sent, including request attempts and error messages (useful for debugging or live analysis) |
 
 ---
 

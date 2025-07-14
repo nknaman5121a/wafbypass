@@ -33,12 +33,18 @@ def send_requests(base_url, payloads, verbose=False, method="GET", post_params=N
             else:
                 r = requests.get(url, timeout=5, allow_redirects=True)
 
-            # Improved reflection detection
+            # Smart reflection & XSS detection
             decoded_payload = html.unescape(payload)
-            is_reflected = (
-                payload in r.text or
-                decoded_payload in r.text
-            )
+
+            # Basic reflection
+            is_raw_reflected = payload in r.text or decoded_payload in r.text
+
+            # False-positive sanitizer patterns (escaped HTML)
+            bad_signatures = ["&lt;", "&gt;", "&#x3c;", "&#x3e;", "\\u003c", "\\u003e"]
+            sanitized = any(sig in r.text for sig in bad_signatures)
+
+            # Final result: reflected and not encoded
+            is_reflected = is_raw_reflected and not sanitized
 
             is_diff = r.text != baseline_text
 

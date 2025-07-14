@@ -21,7 +21,7 @@ def send_requests(base_url, payloads, verbose=False, method="GET", post_params=N
 
         try:
             if method.upper() == "POST" and post_params:
-                post_url = base_url.split('?')[0]  # strip query string
+                post_url = base_url  # ✅ fix: preserve query string
 
                 data = {}
                 for param in post_params:

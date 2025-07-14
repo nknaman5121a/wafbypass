@@ -1,5 +1,6 @@
 import requests
 import hashlib
+import html
 from urllib.parse import urlparse, parse_qs
 
 def send_requests(base_url, payloads, verbose=False, method="GET", post_params=None):
@@ -21,22 +22,24 @@ def send_requests(base_url, payloads, verbose=False, method="GET", post_params=N
 
         try:
             if method.upper() == "POST" and post_params:
-                post_url = base_url  # ✅ fix: preserve query string
+                post_url = base_url  # ✅ preserve query string
 
                 data = {}
                 for param in post_params:
-                    if 'FUZZ' in param:
-                        key, val = param.split('=')
-                        data[key] = payload
-                    else:
-                        key, val = param.split('=')
-                        data[key] = val
+                    key, val = param.split('=')
+                    data[key] = payload if 'FUZZ' in val else val
 
                 r = requests.post(post_url, data=data, timeout=5, allow_redirects=True)
             else:
                 r = requests.get(url, timeout=5, allow_redirects=True)
 
-            is_reflected = payload in r.text
+            # Improved reflection detection
+            decoded_payload = html.unescape(payload)
+            is_reflected = (
+                payload in r.text or
+                decoded_payload in r.text
+            )
+
             is_diff = r.text != baseline_text
 
             results.append({

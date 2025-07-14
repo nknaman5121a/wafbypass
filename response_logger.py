@@ -21,10 +21,10 @@ def log_summary(results):
         print("============================================================")
 
     # ✅ Optional: Log errors or failed requests
-    failed = [r for r in results if r.get('status_code') is None]
-    if failed:
-        print("\n[!] Errors encountered during request:")
-        for r in failed:
-            print(f"→ Payload: {r.get('payload')}")
-            print(f"→ Error  : {r.get('content')}")
-            print("-----------------------------------------------------------")
+    #failed = [r for r in results if r.get('status_code') is None]
+    #if failed:
+     #   print("\n[!] Errors encountered during request:")
+      #  for r in failed:
+       #     print(f"→ Payload: {r.get('payload')}")
+        #    print(f"→ Error  : {r.get('content')}")
+         #   print("-----------------------------------------------------------")

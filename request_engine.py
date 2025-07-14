@@ -2,17 +2,8 @@ import requests
 import hashlib
 from urllib.parse import urlparse, parse_qs
 
-def send_requests(base_url, payloads, verbose=False, method="GET"):
+def send_requests(base_url, payloads, verbose=False, method="GET", post_params=None):
     results = []
-
-    # Extract parameter name from URL (e.g., ?query=FUZZ)
-    parsed_url = urlparse(base_url)
-    query_params = parse_qs(parsed_url.query)
-    param_name = None
-    for k, v in query_params.items():
-        if "FUZZ" in v[0]:
-            param_name = k
-            break
 
     # Prepare baseline
     try:
@@ -29,9 +20,19 @@ def send_requests(base_url, payloads, verbose=False, method="GET"):
             print(f"[>] Sending payload: {payload}")
 
         try:
-            if method.upper() == "POST" and param_name:
-                post_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
-                r = requests.post(post_url, data={param_name: payload}, timeout=5, allow_redirects=True)
+            if method.upper() == "POST" and post_params:
+                post_url = base_url.split('?')[0]  # strip query string
+
+                data = {}
+                for param in post_params:
+                    if 'FUZZ' in param:
+                        key, val = param.split('=')
+                        data[key] = payload
+                    else:
+                        key, val = param.split('=')
+                        data[key] = val
+
+                r = requests.post(post_url, data=data, timeout=5, allow_redirects=True)
             else:
                 r = requests.get(url, timeout=5, allow_redirects=True)
 

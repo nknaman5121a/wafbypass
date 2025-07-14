@@ -26,7 +26,13 @@ def main():
     mutated_payloads = mutate_payloads(payloads, args.type)
     print(f"[+] Generated {len(mutated_payloads)} mutated payload(s)")
 
-    results = send_requests(args.url, mutated_payloads, verbose=args.verbose)
+    results = send_requests(
+        base_url=args.url,
+        payloads=mutated_payloads,
+        verbose=args.verbose,
+        method=args.method,
+        post_params=args.params
+    )
 
     log_summary(results)
 

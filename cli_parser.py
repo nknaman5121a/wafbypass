@@ -9,5 +9,5 @@ def parse_args():
     parser.add_argument('--w', default='./payloads', help='Path to payload directory (default: ./payloads)')
     parser.add_argument('--verbose', action='store_true', help='Show detailed output (payloads sent, errors, etc.)')
     parser.add_argument('--method', default='GET', choices=['GET', 'POST'], help='HTTP method to use (default: GET)')
-
+    parser.add_argument('--params', nargs='+', help='POST parameters as key=FUZZ or key=value (FUZZ is required in at least one)')
     return parser.parse_args()

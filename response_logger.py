@@ -1,8 +1,9 @@
+
 def log_summary(results):
-    success_codes = [200, 301, 302]
+    success_codes = [200, 301, 302, 500]
     successful = [
         r for r in results
-        if r.get('status_code') in success_codes and (r.get('reflected') or r.get('differs'))
+        if r.get('status_code') in success_codes and r.get('reflected') is True
     ]
 
     if successful:

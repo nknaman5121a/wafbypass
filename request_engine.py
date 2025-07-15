@@ -33,34 +33,22 @@ def send_requests(base_url, payloads, verbose=False, method="GET", post_params=N
             else:
                 r = requests.get(url, timeout=5, allow_redirects=True)
 
-            # Reflection and execution detection
             response_text = r.text.lower()
             decoded_payload = html.unescape(payload).lower()
 
-            # Step 1: Reflection check
-            is_direct_reflection = (
-                payload.lower() in response_text or
-                decoded_payload in response_text
-            )
+            # Step 1: Raw reflection only (no base64 or encoded junk)
+            raw_reflection = payload in response_text
 
-            # Step 2: Executable tag/JS handler detection (dynamic check)
-            likely_executable = (
-                is_direct_reflection and (
-                    decoded_payload.strip().startswith(("<script", "<img", "<svg", "<iframe", "<body", "<input", "<a")) or
-                    "onerror=" in decoded_payload or
-                    "onload=" in decoded_payload or
-                    "onclick=" in decoded_payload or
-                    "src=javascript:" in decoded_payload or
-                    "href=javascript:" in decoded_payload
-                )
-            )
+            # Step 2: Executable context check (real attack surface)
+            exec_contexts = ["<script", "<svg", "<img", "<iframe", "onerror=", "onload=", "onclick=", "src=javascript:", "href=javascript:"]
+            in_exec_context = any(ctx in response_text for ctx in exec_contexts)
 
-            # Step 3: Reject false reflections (e.g. &lt;, \u003c)
+            # Step 3: Avoid common encoding escapes
             bad_signatures = ["&lt;", "&gt;", "&#x3c;", "&#x3e;", "\\u003c", "\\u003e"]
             sanitized = any(sig in response_text for sig in bad_signatures)
 
-            # Final decision: Reflected + likely executable + not sanitized
-            is_reflected = is_direct_reflection and likely_executable and not sanitized
+            # Final decision
+            is_reflected = raw_reflection and in_exec_context and not sanitized
             is_diff = response_text != baseline_text
 
             results.append({

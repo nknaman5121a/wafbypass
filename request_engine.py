@@ -33,24 +33,34 @@ def send_requests(base_url, payloads, verbose=False, method="GET", post_params=N
             else:
                 r = requests.get(url, timeout=5, allow_redirects=True)
 
-            # Reflection and basic bypass detection
-            decoded_payload = html.unescape(payload)
-            response_text = r.text
+            # Reflection and execution detection
+            response_text = r.text.lower()
+            decoded_payload = html.unescape(payload).lower()
 
-            # Check for raw or unescaped reflection
-            is_raw_reflected = payload in response_text or decoded_payload in response_text
+            # Step 1: Reflection check
+            is_direct_reflection = (
+                payload.lower() in response_text or
+                decoded_payload in response_text
+            )
 
-            # Check for sanitization (common WAF encodings)
+            # Step 2: Executable tag/JS handler detection (dynamic check)
+            likely_executable = (
+                is_direct_reflection and (
+                    decoded_payload.strip().startswith(("<script", "<img", "<svg", "<iframe", "<body", "<input", "<a")) or
+                    "onerror=" in decoded_payload or
+                    "onload=" in decoded_payload or
+                    "onclick=" in decoded_payload or
+                    "src=javascript:" in decoded_payload or
+                    "href=javascript:" in decoded_payload
+                )
+            )
+
+            # Step 3: Reject false reflections (e.g. &lt;, \u003c)
             bad_signatures = ["&lt;", "&gt;", "&#x3c;", "&#x3e;", "\\u003c", "\\u003e"]
             sanitized = any(sig in response_text for sig in bad_signatures)
 
-            # Bonus: Check for executable context
-            likely_executable = any(x in response_text.lower() for x in [
-                "<script", "onerror=", "onload=", "onclick=", "src=javascript:", "<svg", "<iframe"
-            ])
-
-            # Final decision
-            is_reflected = is_raw_reflected and not sanitized and likely_executable
+            # Final decision: Reflected + likely executable + not sanitized
+            is_reflected = is_direct_reflection and likely_executable and not sanitized
             is_diff = response_text != baseline_text
 
             results.append({
